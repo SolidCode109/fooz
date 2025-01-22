@@ -2,18 +2,18 @@
 
 include get_stylesheet_directory() . '/includes/custom-post-type.php';
 
-add_action( 'wp_enqueue_scripts', 'theme_enqueue_styles' );
-function theme_enqueue_styles() {
-    wp_enqueue_style( 'parent-style', get_template_directory_uri() . '/style.css' );
-    wp_enqueue_style( 'child-style', get_stylesheet_directory_uri() . '/style.css');
-    wp_enqueue_script( 'child-theme', get_template_directory_uri() . '-child/assets/js/scripts.js', array("jquery"), true );
+add_action('wp_enqueue_scripts', 'theme_enqueue_styles');
+function theme_enqueue_styles()
+{
+    wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
+    wp_enqueue_style('child-style', get_stylesheet_directory_uri() . '/style.css', array('parent-style'));
+    wp_enqueue_script('child-theme', get_template_directory_uri() . '-child/assets/js/scripts.js', array("jquery"), true);
 
 
-        // Pass AJAX URL to the script TO CHECK
-        wp_localize_script('child-theme', 'ajaxData', array(
-            'ajax_url' => admin_url('admin-ajax.php'),
-        ));
-
+    // Pass AJAX URL to the script
+    wp_localize_script('child-theme', 'ajaxData', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
+    ));
 }
 
 
@@ -71,7 +71,8 @@ add_filter('template_include', function ($template) {
 
 add_shortcode('recent_book', 'getRecentBook');
 
-function getRecentBook(){
+function getRecentBook()
+{
 
 
     $args = array(
@@ -83,22 +84,21 @@ function getRecentBook(){
 
     $query = new WP_Query($args);
 
-   if($query->have_posts()) :
+    if ($query->have_posts()) :
 
-    while($query->have_posts()) :
+        while ($query->have_posts()) :
 
-        $query->the_post();
+            $query->the_post();
 
-        $title = the_title();
+            $title = the_title();
 
-        return $title;
+            return $title;
 
-    endwhile;
-   
-   wp_reset_postdata();
+        endwhile;
 
-   endif;
+        wp_reset_postdata();
 
+    endif;
 }
 
 //5.2. Second one will return a list of 5 books from given Genre (user must be able to specify genre, 
@@ -107,32 +107,33 @@ function getRecentBook(){
 
 add_shortcode('books_by_genre', 'getBooksByGenre');
 
-function getBooksByGenre($atts){
+function getBooksByGenre($atts)
+{
 
-    
+
     $output = '';
     if (isset($_POST['genre_id']) && is_numeric($_POST['genre_id'])) {
         $genre_id = intval($_POST['genre_id']);
-        
+
         // Check if the genre exists
         $term = get_term($genre_id, 'genre');
         if ($term && !is_wp_error($term)) {
-            
+
             $args = array(
                 'post_type' => 'books',
                 'posts_per_page' => 5,
-                'orderby' => 'title', 
+                'orderby' => 'title',
                 'order' => 'ASC',
                 'tax_query' => array(
                     array(
                         'taxonomy' => 'genre',
                         'field' => 'term_id',
-                        'terms' => $genre_id, 
+                        'terms' => $genre_id,
                     ),
                 ),
             );
 
-            
+
             $query = new WP_Query($args);
 
             if ($query->have_posts()) {
@@ -145,7 +146,7 @@ function getBooksByGenre($atts){
                 $output .= '<p>No books found in this genre.</p>';
             }
 
-            
+
             wp_reset_postdata();
         } else {
             $output .= '<p>No genre found with the provided ID.</p>';
@@ -164,8 +165,6 @@ function getBooksByGenre($atts){
     ';
 
     return $output;
-
-
 }
 
 //6. Create an AJAX callback returning 20 books in JSON format. 
@@ -176,7 +175,8 @@ function getBooksByGenre($atts){
 add_action('wp_ajax_get_books', 'getBooksByAjax');
 add_action('wp_ajax_nopriv_get_books', 'getBooksByAjax');
 
-function getBooksByAjax(){
+function getBooksByAjax()
+{
 
     $args = array(
         'post_type'      => 'books',
@@ -202,7 +202,7 @@ function getBooksByAjax(){
         wp_reset_postdata();
     }
 
-    
+
     wp_send_json($books);
     exit;
 }

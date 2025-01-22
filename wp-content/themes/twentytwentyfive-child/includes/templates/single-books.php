@@ -3,6 +3,8 @@
 /* Post Type: books */ 
 ?>
 
+<link rel="stylesheet" href="http://fooz-zadanie-rekrutacyjne.local/wp-content\themes\twentytwentyfive-child\style.css" type="text/css" media="all">
+
 <?php
 get_header(); 
 ?>
